@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>YouTube Comment Sentiment Analysis</title>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css"
+        integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous" />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"
+        integrity="sha384-cuYeSxntonz0PPNlHhBs68uyIAVpIIOZZ5JqeqvYYIcEL727kskC66kF92t6Xl2V"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .wrapper {
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        body {
+            background-color: #282a36;
+            background-size: 100%;
+        }
+
+        .center-box {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .just-below {
+            margin-top: auto;
+            margin: 1rem 0px;
+            padding: 0px;
+        }
+
+        h1 {
+            font-family: "Source Sans Pro", sans-serif;
+            font-weight: 700;
+            color: rgb(248, 248, 242);
+            line-height: 1.4;
+            font-size: 2.75rem;
+            text-align: left;
+        }
+
+        p {
+            margin: 1rem 0px;
+            padding: 0px;
+            font-size: 1rem;
+            font-weight: 400;
+            font-family: "Source Sans Pro", sans-serif;
+            color: rgb(248, 248, 242);
+            text-align: left;
+        }
+
+        .after_complete_message {
+            font-size: 1.4rem;
+            font-weight: 400;
+            font-family: "Source Sans Pro", sans-serif;
+            color: rgb(248, 248, 242);
+            text-align: left;
+            margin-top: 20px;
+            display: block;
+        }
+
+        span {
+            font-size: 1rem;
+            font-weight: 400;
+            font-family: "Source Sans Pro", sans-serif;
+            color: rgb(248, 248, 242);
+            text-align: left;
+            margin-top: 1px;
+        }
+
+        .url-box-label {
+            font-size: 14px;
+            color: rgb(248, 248, 242);
+            margin-bottom: 7px;
+            height: auto;
+            min-height: 1.5rem;
+            vertical-align: middle;
+            display: flex;
+            flex-direction: row;
+            -moz-box-align: center;
+            align-items: center;
+        }
+
+        :root {
+            --focus-color: #0099ef;
+        }
+
+        .box-container {
+            text-align: left;
+        }
+
+        .box {
+            margin-bottom: 15px;
+            display: inline-block;
+            position: relative;
+        }
+
+        .box input {
+            padding: 5px 10px;
+            height: 45px;
+            font-size: 1em;
+            line-height: 45px;
+            border: 1px solid rgb(248, 248, 242);
+            border-radius: 5px;
+            width: 1284px;
+            outline: none;
+            background: #ffffff;
+            color: #282a36;
+        }
+
+        .box input:focus {
+            outline: none;
+        }
+
+        .box input:focus+span {
+            width: 100%;
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .box input:focus+span:before,
+        .box input:focus+span:after {
+            transition-property: top, bottom;
+            transition: 0.3s ease-out;
+        }
+
+        .box input:focus+span:before {
+            top: -30px;
+        }
+
+        .box input:focus+span:after {
+            bottom: -30px;
+        }
+
+        .box input:focus+span:before,
+        .box input:focus+span:after {
+            content: "";
+            display: inline-block;
+            position: absolute;
+            left: 25px;
+            height: 2px;
+            width: calc(100% - 50px);
+            background: var(--focus-color);
+        }
+
+        .box input:focus+span {
+            display: inline-block;
+            position: absolute;
+            left: 0;
+            top: 0;
+            border-left: 2px solid var(--focus-color);
+            border-right: 2px solid var(--focus-color);
+            width: calc(100% + 100px);
+            transform: translateX(-50px);
+            height: 100%;
+            pointer-events: none;
+            opacity: 0;
+            transition-property: opacity, width;
+            transition: 0.3s ease-out;
+        }
+
+        .box input:hover {
+            border-color: var(--focus-color);
+        }
+
+        .channel_details {
+            text-align: left;
+            color: rgb(248, 248, 242);
+            font-size: 18px;
+        }
+
+        table {
+            font-size: 1rem;
+            font-weight: 400;
+            font-family: "Source Sans Pro", sans-serif;
+            color: #282a36;
+            text-align: left;
+            border-collapse: collapse;
+            width: 95%;
+            background-color: #ffffff;
+            /* added */
+        }
+
+        td {
+            padding: 8px;
+            border: 1px solid #000000;
+        }
+
+        td:first-child {
+            font-weight: bold;
+        }
+
+        tr:nth-child(even) {
+            /* added */
+            background-color: #f4f4f4;
+        }
+
+        tr:hover {
+            /* added */
+            background-color: #dcf2ff;
+        }
+
+        #loading {
+            margin: 0px 10px;
+            display: none;
+            position: relative;
+        }
+
+        #loading span {
+            position: relative;
+            display: inline-block;
+            font-size: 30px;
+            font-weight: 700;
+            font-family: "Source Sans Pro", sans-serif;
+            color: rgb(248, 248, 242);
+            /*text-transform: uppercase;*/
+            animation: flip 5s infinite;
+            animation-delay: calc(0.2s * var(--i));
+            text-align: center;
+        }
+
+        @keyframes flip {
+
+            0%,
+            80% {
+                transform: rotateY(360deg);
+            }
+        }
+
+        #scrap_button {
+            display: inline-block;
+            background-color: #e98074;
+            color: lightyellow;
+            border: none;
+            border-radius: 5px;
+            box-shadow: 0px 3px 0px #c44e3a;
+            cursor: pointer;
+            font-size: 1.2em;
+            font-weight: bold;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            text-transform: uppercase;
+            transition: all 0.2s ease-in-out;
+            width: 150px;
+        }
+
+        #scrap_button:hover {
+            background-color: #e85a4f;
+            box-shadow: 0px 3px 0px #b34734;
+            color: white;
+        }
+
+        #scrap_button:focus {
+            outline: none;
+        }
+
+        #underline-fullscreen {
+            width: 95%;
+            height: 3px;
+            margin-bottom: 20px;
+            background-color: rgb(248, 248, 242);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="center-box">
+        <div class="container">
+            <h1>YouTube Comment Sentiment Analysis</h1>
+            <p>
+                Not sure the quality of a YouTube video? Let's find out using the
+                comment section of the video.
+            </p>
+            <p>
+                <strong>To begin, please enter the link to the YouTube video you wish to
+                    analyze</strong>
+                👇
+            </p>
+        </div>
+        <div class="container box-container">
+            <form method="post" action="/scrap">
+                <div class="box">
+                    <label class="url-box-label">Input a YouTube video link (e.g.
+                        https://www.youtube.com/watch?v=X2vAabgKiuM)</label>
+                    <input type="text" class="url-box-input" value="" name="youtube url" />
+                </div>
+                <input type="submit" value="Scrap" id="scrap_button" onclick="$('#loading').show();" />
+            </form>
+        </div>
+        <div id="loading">
+            <span style="--i: 1">F</span>
+            <span style="--i: 2">E</span>
+            <span style="--i: 3">T</span>
+            <span style="--i: 4">C</span>
+            <span style="--i: 5">H</span>
+            <span style="--i: 6">I</span>
+            <span style="--i: 7">N</span>
+            <span style="--i: 8">G&nbsp;</span>
+            <span style="--i: 9">C</span>
+            <span style="--i: 10">O</span>
+            <span style="--i: 11">M</span>
+            <span style="--i: 12">M</span>
+            <span style="--i: 13">E</span>
+            <span style="--i: 14">N</span>
+            <span style="--i: 15">T</span>
+            <span style="--i: 16">S</span>
+            <span style="--i: 17">.</span>
+            <span style="--i: 18">.</span>
+            <span style="--i: 19">.</span>
+        </div>
+    </div>
+    <div class="container">
+        <div class="just-below">
+
+            {% if after_complete_message %}
+            <p class="after_complete_message">
+                <strong>{{ after_complete_message }}</strong>
+            </p>
+            <div id="underline-fullscreen"></div>
+            <table>
+                <tr>
+                    <td><strong>Video Title:</strong></td>
+                    <td>{{ title }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Video Published by:</strong></td>
+                    <td>{{ owner }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Total Comments including replies:</strong></td>
+                    <td>{{ comment_w_replies }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Total Comments without replies:</strong></td>
+                    <td>{{ comment_wo_replies }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Total Positive Comments:</strong></td>
+                    <td>{{ positive_comment }} Commentss</td>
+                </tr>
+                <tr>
+                    <td><strong>Total Negative Comments:</strong></td>
+                    <td>{{ negative_comment }} Comments</td>
+                </tr>
+                <tr>
+                    <td><strong>Total Neutral Comments:</strong></td>
+                    <td>{{ neutral_comment }} Comments</td>
+                </tr>
+            </table>
+            <br>
+            <h1 style="font-size: medium;">Pie Chart representation of positive, negative, and neutral Comments</h1>
+            <div style="height: 400px;">
+                <canvas id="myChart"></canvas>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="container">
+        <div style="overflow-x: auto">
+            {% if after_complete_message %}
+            <p class="after_complete_message"><strong>Positive Comments</strong></p>
+            <div id="underline-fullscreen"></div>
+            <table>
+                <th>
+                    <tr>
+                        {% for pos_comments in pos_comments_csv %} {{ pos_comments |
+                        safe}} {% endfor %}
+                    </tr>
+                </th>
+            </table>
+            {% endif %}
+        </div>
+    </div>
+    <div class="container" style="margin-bottom: 20px;">
+        <div style="overflow-x: auto">
+            {% if after_complete_message %}
+            <p class="after_complete_message"><strong>Negative Comments</strong></p>
+            <div id="underline-fullscreen"></div>
+            <table>
+                <th>
+                    <tr>
+                        {% for neg_comments in neg_comments_csv %} {{ neg_comments |
+                        safe}} {% endfor %}
+                    </tr>
+                </th>
+            </table>
+            {% endif %}
+        </div>
+    </div>
+    <div class="container" style="margin-bottom: 20px;">
+        <div style="overflow-x: auto">
+            {% if after_complete_message %}
+            <p class="after_complete_message"><strong>Neutral Comments</strong></p>
+            <div id="underline-fullscreen"></div>
+            <table>
+                <th>
+                    <tr>
+                        {% for neu_comments in neu_comments_csv %} {{ neu_comments |
+                        safe}} {% endfor %}
+                    </tr>
+                </th>
+            </table>
+            {% endif %}
+        </div>
+    </div>
+    <script>
+        var ctx = document.getElementById('myChart').getContext('2d');
+        var myChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Positive', 'Negative', 'Neutral'],
+                datasets: [{
+                    data: ['{{positive_comment}}','{{negative_comment}}' , '{{neutral_comment}}'],
+                    backgroundColor: [
+                        'rgba(0, 63, 92, 0.8)',
+                        'rgba(255, 0, 4, 0.8)',
+                        'rgba(255, 166, 0, 0.8)',
+                    ],
+                    borderColor: [
+                        'rgba(0, 63, 92, 1)',
+                        'rgba(255, 0, 4, 1)',
+                        'rgba(255, 166, 0, 1)',
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    </script>
+
+</body>
+
+</html>
